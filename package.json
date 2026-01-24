@@ -1,0 +1,21 @@
+{
+  "name": "gold-x-group-bot",
+  "version": "1.0.0",
+  "description": "Discord bot that stays connected to a voice channel for Gold X - Group",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "keywords": [
+    "discord",
+    "voice",
+    "bot"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@discordjs/voice": "^0.16.1",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5"
+  }
+}
