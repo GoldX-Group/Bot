@@ -31,6 +31,8 @@ const {
   ADMIN_ROLE_ID,
 } = process.env;
 
+const COMMAND_KEYWORD = 'bot';
+
 if (!DISCORD_TOKEN || !GUILD_ID || !VOICE_CHANNEL_ID) {
   throw new Error(
     'Missing environment variables. Ensure DISCORD_TOKEN, GUILD_ID and VOICE_CHANNEL_ID are set.'
@@ -41,6 +43,123 @@ class SilenceStream extends Readable {
   _read() {
     this.push(Buffer.from([0xf8, 0xff, 0xfe]));
   }
+}
+
+// Función para crear embeds personalizados
+async function createCustomEmbed(message, args) {
+  try {
+    if (args.length === 0) {
+      await message.reply(
+        'Uso: !embed Título | Descripción | #colorOpcional (por ejemplo: !embed Aviso | Bienvenidos al servidor | #5865F2)'
+      );
+      return;
+    }
+
+    const raw = args.join(' ');
+    const [titleRaw, descriptionRaw, colorRaw] = raw.split('|').map((part) => part?.trim());
+
+    if (!titleRaw) {
+      await message.reply('Debes indicar un título para el embed.');
+      return;
+    }
+
+    const embed = new EmbedBuilder().setTitle(titleRaw).setTimestamp();
+
+    if (descriptionRaw) {
+      embed.setDescription(descriptionRaw);
+    }
+
+    if (colorRaw) {
+      const colorValue = parseColor(colorRaw);
+      if (!colorValue) {
+        await message.reply('El color debe ser un valor hex válido (por ejemplo, #5865F2).');
+        return;
+      }
+      embed.setColor(colorValue);
+    } else {
+      embed.setColor('#5865f2');
+    }
+
+    await message.channel.send({ embeds: [embed] });
+
+    if (message.channel.permissionsFor(message.guild.members.me).has(PermissionFlagsBits.ManageMessages)) {
+      await message.delete().catch(() => {});
+    }
+  } catch (error) {
+    console.error('Error creating custom embed:', error);
+    await message.reply('No se pudo crear el embed. Inténtalo de nuevo más tarde.');
+  }
+}
+
+// Función para publicar panel de tickets
+async function sendTicketPanelEmbed(message, args) {
+  try {
+    let targetChannel = message.channel;
+
+    if (args.length > 0) {
+      const mentionMatch = args[0].match(/<#(\d+)>/);
+      if (mentionMatch) {
+        const channelId = mentionMatch[1];
+        const fetchedChannel = message.guild.channels.cache.get(channelId) ?? (await message.guild.channels.fetch(channelId).catch(() => null));
+        if (fetchedChannel && fetchedChannel.type === ChannelType.GuildText) {
+          targetChannel = fetchedChannel;
+        } else {
+          await message.reply('No pude encontrar el canal mencionado o no es un canal de texto.');
+          return;
+        }
+      }
+    }
+
+    if (targetChannel.type !== ChannelType.GuildText) {
+      await message.reply('El canal objetivo debe ser un canal de texto.');
+      return;
+    }
+
+    const ticketInstructions = TICKET_CATEGORY_ID
+      ? `Usa **!ticket** para crear un ticket. Los tickets se organizarán en la categoría <#${TICKET_CATEGORY_ID}>.`
+      : 'Usa **!ticket** para crear un ticket privado con el staff.';
+
+    const embed = new EmbedBuilder()
+      .setColor('#f1c40f')
+      .setTitle('🎫 Centro de Tickets')
+      .setDescription(ticketInstructions)
+      .addFields(
+        {
+          name: 'Cómo cerrar un ticket',
+          value: 'Dentro del canal del ticket escribe **!close** cuando quieras finalizar la conversación.',
+        },
+        {
+          name: 'Embeds personalizados',
+          value: 'Los moderadores pueden usar **!embed Título | Descripción | #color** para dar avisos importantes.',
+        },
+        {
+          name: 'Sonidos',
+          value: 'Usa **!play nombre** para audio y **!stop** para detenerlo.',
+        }
+      )
+      .setFooter({ text: `Solicitado por ${message.author.tag}` })
+      .setTimestamp();
+
+    await targetChannel.send({ embeds: [embed] });
+
+    if (targetChannel.id !== message.channel.id) {
+      await message.reply(`Panel de tickets publicado en ${targetChannel}.`);
+    }
+  } catch (error) {
+    console.error('Error sending ticket panel embed:', error);
+    await message.reply('No se pudo enviar el panel de tickets. Inténtalo de nuevo más tarde.');
+  }
+}
+
+function parseColor(input) {
+  if (!input) return null;
+  const normalized = input.trim().replace(/^0x/i, '#');
+  if (!normalized.startsWith('#')) return null;
+  const hex = normalized.slice(1);
+  if (![3, 6].includes(hex.length) || !/^[0-9a-f]+$/i.test(hex)) {
+    return null;
+  }
+  return `#${hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex}`;
 }
 
 const client = new Client({
@@ -461,31 +580,28 @@ client.on(Events.MessageCreate, async (message) => {
 
   try {
     const content = message.content.trim();
-    const lowerContent = content.toLowerCase();
+    const parts = content.split(/\s+/);
+    if (parts.length === 0) return;
 
-    if (lowerContent === '!ticket') {
-      await createTicket(message);
+    const keyword = parts.shift().toLowerCase();
+    if (keyword !== COMMAND_KEYWORD) return;
+
+    if (parts.length === 0) {
+      await message.reply('Escribe "bot help" para ver los comandos disponibles.');
       return;
     }
 
-    if (lowerContent === '!close') {
-      await closeTicket(message);
+    const commandName = parts.shift().toLowerCase();
+    const args = parts;
+    const command = commands.get(commandName);
+    if (!command) return;
+
+    if (command.requiredPermission && !message.member.permissions.has(command.requiredPermission)) {
+      await message.reply('No tienes permisos para usar este comando.');
       return;
     }
 
-    if (lowerContent.startsWith('!play ')) {
-      const soundName = content.substring(6).trim();
-      if (!soundName) {
-        await message.reply('Debes indicar el nombre del sonido.');
-        return;
-      }
-      await playSound(message, soundName);
-      return;
-    }
-
-    if (lowerContent === '!stop') {
-      await stopSound(message);
-    }
+    await command.execute(message, args);
   } catch (error) {
     console.error('Error handling message:', error);
     try {
@@ -498,6 +614,89 @@ client.on(Events.MessageCreate, async (message) => {
     }
   }
 });
+
+const commands = new Map([
+  [
+    'ticket',
+    {
+      description: 'Crea un ticket privado para soporte. Uso: bot ticket',
+      execute: async (message) => {
+        await createTicket(message);
+      },
+    },
+  ],
+  [
+    'close',
+    {
+      description: 'Cierra el ticket actual (solo staff o creador). Uso: bot close',
+      execute: async (message) => {
+        await closeTicket(message);
+      },
+    },
+  ],
+  [
+    'play',
+    {
+      description: 'Reproduce un sonido almacenado. Uso: bot play nombre',
+      execute: async (message, args) => {
+        if (args.length === 0) {
+          await message.reply('Debes indicar el nombre del sonido. Uso: !play nombre');
+          return;
+        }
+        const soundName = args.join(' ');
+        await playSound(message, soundName);
+      },
+    },
+  ],
+  [
+    'stop',
+    {
+      description: 'Detiene la reproducción de audio. Uso: bot stop',
+      execute: async (message) => {
+        await stopSound(message);
+      },
+    },
+  ],
+  [
+    'embed',
+    {
+      description: 'Crea un embed rápido. Uso: bot embed titulo | descripcion | #color opcional',
+      requiredPermission: PermissionFlagsBits.ManageMessages,
+      execute: async (message, args) => {
+        await createCustomEmbed(message, args);
+      },
+    },
+  ],
+  [
+    'ticketpanel',
+    {
+      description:
+        'Publica un embed informativo en el canal actual o indicado. Uso: bot ticketpanel #canal opcional',
+      requiredPermission: PermissionFlagsBits.ManageChannels,
+      execute: async (message, args) => {
+        await sendTicketPanelEmbed(message, args);
+      },
+    },
+  ],
+  [
+    'help',
+    {
+      description: 'Muestra comandos disponibles. Uso: bot help',
+      execute: async (message) => {
+        const embed = new EmbedBuilder()
+          .setColor('#5865f2')
+          .setTitle('📋 Comandos disponibles')
+          .setDescription(
+            Array.from(commands.entries())
+              .map(([name, cfg]) => `**bot ${name}** - ${cfg.description}`)
+              .join('\n')
+          )
+          .setTimestamp();
+        await message.reply({ embeds: [embed] });
+      },
+    },
+  ],
+]);
 
 client.on('error', (error) => {
   console.error('Discord client error:', error);
