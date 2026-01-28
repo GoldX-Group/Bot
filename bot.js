@@ -23,6 +23,7 @@ const {
 const { Readable } = require('node:stream');
 const fs = require('fs');
 const path = require('path');
+const { prisma } = require('./src/lib/prisma');
 
 const {
   DISCORD_TOKEN,
@@ -327,6 +328,20 @@ async function createTicket(interaction) {
       return;
     }
 
+    // Verificar si ya existe un ticket abierto para este usuario
+    const existingTicket = await prisma.ticket.findFirst({
+      where: {
+        guildId: GUILD_ID,
+        userId: interaction.user.id,
+        status: 'OPEN',
+      },
+    });
+
+    if (existingTicket) {
+      await interaction.editReply(`Ya tienes un ticket abierto: <#${existingTicket.channelId}>`);
+      return;
+    }
+
     const currentChannel = interaction.channel;
     if (TICKET_CATEGORY_ID && currentChannel?.parentId !== TICKET_CATEGORY_ID) {
       await interaction.editReply(
@@ -384,6 +399,32 @@ async function createTicket(interaction) {
       .setTimestamp();
 
     await ticketChannel.send({ embeds: [embed] });
+
+    // Guardar ticket en la base de datos
+    const ticket = await prisma.ticket.create({
+      data: {
+        guildId: GUILD_ID,
+        userId: interaction.user.id,
+        channelId: ticketChannel.id,
+        status: 'OPEN',
+        priority: 'MEDIUM',
+      },
+    });
+
+    // Guardar mensaje inicial del ticket
+    await prisma.ticketMessage.create({
+      data: {
+        ticketId: ticket.id,
+        authorId: interaction.user.id,
+        content: embed.toJSON().description || 'Ticket creado',
+      },
+    });
+
+    // Registrar actividad
+    await logActivity(interaction.user.id, 'TICKET_CREATED', {
+      ticketId: ticket.id,
+      channelId: ticketChannel.id,
+    });
 
     await interaction.editReply(`Tu ticket ha sido creado en ${ticketChannel}.`);
   } catch (error) {
@@ -459,11 +500,27 @@ async function closeTicket(interaction) {
 
     setTimeout(async () => {
       try {
+        // Actualizar ticket en base de datos antes de eliminar
+        await prisma.ticket.updateMany({
+          where: {
+            guildId: GUILD_ID,
+            channelId: channel.id,
+          },
+          data: {
+            status: 'CLOSED',
+          },
+        });
+
         await channel.delete('Ticket cerrado');
       } catch (error) {
         console.error('Error deleting ticket channel:', error);
       }
     }, 5000);
+
+    // Registrar actividad
+    await logActivity(interaction.user.id, 'TICKET_CLOSED', {
+      channelId: channel.id,
+    });
 
     await interaction.editReply('Ticket cerrado. El canal se eliminará en 5 segundos.');
   } catch (error) {
@@ -576,6 +633,43 @@ async function showHelp(interaction) {
   await interaction.reply({ embeds: [embed], ephemeral: true });
 }
 
+// Inicialización de Prisma y datos base
+async function initializeDatabase() {
+  try {
+    // Asegurar que existe configuración para el guild
+    const guildSetting = await prisma.guildSetting.upsert({
+      where: { guildId: GUILD_ID },
+      update: {},
+      create: {
+        guildId: GUILD_ID,
+        locale: 'es',
+      },
+    });
+
+    console.log('Base de datos inicializada para el guild:', GUILD_ID);
+    return guildSetting;
+  } catch (error) {
+    console.error('Error inicializando base de datos:', error);
+    throw error;
+  }
+}
+
+// Registrar actividad en audit logs
+async function logActivity(actorId, action, metadata = null) {
+  try {
+    await prisma.auditLog.create({
+      data: {
+        guildId: GUILD_ID,
+        actorId,
+        action,
+        metadata: metadata ? JSON.stringify(metadata) : null,
+      },
+    });
+  } catch (error) {
+    console.error('Error registrando actividad:', error);
+  }
+}
+
 // Manejador de interacciones de slash commands
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.guild) return;
@@ -624,6 +718,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 client.once(Events.ClientReady, async (readyClient) => {
   console.log(`Logged in as ${readyClient.user.tag}`);
+
+  // Inicializar base de datos
+  try {
+    await initializeDatabase();
+  } catch (error) {
+    console.error('No se pudo inicializar la base de datos. Continuando sin persistencia.');
+  }
 
   readyClient.user.setPresence({
     activities: [
