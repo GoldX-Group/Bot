@@ -4,7 +4,8 @@
   "description": "Discord bot that stays connected to a voice channel for Gold X - Group",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node bot.js",
+    "postinstall": "prisma generate"
   },
   "keywords": [
     "discord",

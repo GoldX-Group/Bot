@@ -23,9 +23,10 @@ const {
 const { Readable } = require('node:stream');
 const fs = require('fs');
 const path = require('path');
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('./src/generated/client');
 
 const prisma = new PrismaClient();
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || process.env.RAILWAY_STATIC_URL;
 
 const {
   DISCORD_TOKEN,
