@@ -25,6 +25,10 @@ const fs = require('fs');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 
+if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.trim()) {
+  process.env.DATABASE_URL = 'file:./prisma/dev.db';
+}
+
 const prisma = new PrismaClient();
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || process.env.RAILWAY_STATIC_URL;
 

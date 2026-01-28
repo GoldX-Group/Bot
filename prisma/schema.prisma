@@ -5,44 +5,17 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "node_modules/.prisma/client"
+  provider = "prisma-client-js"
 }
 
 generator dashboardClient {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated"
 }
 
 datasource db {
   provider = "sqlite"
-}
-
-enum TicketStatus {
-  OPEN
-  IN_PROGRESS
-  CLOSED
-}
-
-enum TicketPriority {
-  LOW
-  MEDIUM
-  HIGH
-}
-
-enum TransactionType {
-  EARN
-  SPEND
-  ADJUST
-}
-
-enum ModerationType {
-  WARN
-  MUTE
-  KICK
-  BAN
-  UNMUTE
-  UNBAN
+  url      = env("DATABASE_URL")
 }
 
 model GuildSetting {
@@ -69,8 +42,8 @@ model Ticket {
   userId      String
   channelId   String        @unique
   category    String?
-  priority    TicketPriority @default(MEDIUM)
-  status      TicketStatus   @default(OPEN)
+  priority    String         @default("MEDIUM")
+  status      String         @default("OPEN")
   assignedTo  String?
   metadata    String?
   createdAt   DateTime       @default(now())
@@ -128,7 +101,7 @@ model EconomyTransaction {
   profileId   Int
   guildId     String
   amount      Int
-  type        TransactionType @default(EARN)
+  type        String          @default("EARN")
   description String?
   metadata    String?
   createdAt   DateTime        @default(now())
@@ -155,7 +128,7 @@ model ModerationAction {
   guildId      String
   userId       String
   moderatorId  String
-  type         ModerationType
+  type         String
   reason       String?
   durationMinutes Int?
   expiresAt    DateTime?
