@@ -140,8 +140,7 @@ let promoInterval;
 function buildHourlyPromoEmbed() {
   const embed = new EmbedBuilder()
     .setColor('#FF0000')
-    .setTitle('🔴 GOLD X - GROUP  - Tienda Oficial')
-    .setThumbnail('https://media.discordapp.net/attachments/1461000295814267124/1464234088394260644/Logo_5.png?ex=697aa882&is=69795702&hm=7d9dc3457656985ca445c35950db77a2f3cbad2cc3aab7a0e9fbeb68d54070e6&=&format=webp&quality=lossless&width=263&height=263')
+    .setAuthor({ name: '🔴 GOLD X - GROUP  - Tienda Oficial', iconURL: 'https://media.discordapp.net/attachments/1461000295814267124/1464234088394260644/Logo_5.png?ex=697aa882&is=69795702&hm=7d9dc3457656985ca445c35950db77a2f3cbad2cc3aab7a0e9fbeb68d54070e6&=&format=webp&quality=lossless&width=263&height=263' })
     .setDescription('🎟️ **¡Realiza tus compras únicamente en el canal de tickets!**\n🛎️ Usa **/ticket** para abrir uno con el staff.')
     .addFields(
       {
@@ -173,7 +172,7 @@ function buildHourlyPromoEmbed() {
 async function sendHourlyPromoMessage(channel) {
   try {
     const embed = buildHourlyPromoEmbed();
-    await channel.send({ embeds: [embed] });
+    await channel.send({ content: '||@everyone|| ||@here||', embeds: [embed] });
   } catch (error) {
     console.error('Error enviando mensaje promocional:', error);
   }
