@@ -32,17 +32,21 @@ if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.trim()) {
 const prisma = new PrismaClient();
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || process.env.RAILWAY_STATIC_URL;
 
-const {
-  DISCORD_TOKEN,
-  GUILD_ID,
-  VOICE_CHANNEL_ID,
-  TICKET_CATEGORY_ID,
-  ADMIN_ROLE_ID,
-} = process.env;
+const FALLBACK_VOICE_CHANNEL_ID = 'REPLACE_WITH_VOICE_CHANNEL_ID';
+const FALLBACK_GENERAL_CHANNEL_ID = 'REPLACE_WITH_GENERAL_CHANNEL_ID';
 
-if (!DISCORD_TOKEN || !GUILD_ID || !VOICE_CHANNEL_ID) {
+const DISCORD_TOKEN = process.env.DISCORD_TOKEN?.trim();
+const GUILD_ID = process.env.GUILD_ID?.trim();
+const VOICE_CHANNEL_ID = process.env.VOICE_CHANNEL_ID?.trim() || FALLBACK_VOICE_CHANNEL_ID;
+const TICKET_CATEGORY_ID = process.env.TICKET_CATEGORY_ID?.trim() || null;
+const ADMIN_ROLE_ID = process.env.ADMIN_ROLE_ID?.trim() || null;
+const GENERAL_CHANNEL_ID = process.env.GENERAL_CHANNEL_ID?.trim() || FALLBACK_GENERAL_CHANNEL_ID;
+const PROMO_IMAGE_URL = process.env.PROMO_IMAGE_URL?.trim() || null;
+const PROMO_MESSAGE_INTERVAL_MINUTES = process.env.PROMO_MESSAGE_INTERVAL_MINUTES?.trim();
+
+if (!DISCORD_TOKEN || !GUILD_ID || !VOICE_CHANNEL_ID || VOICE_CHANNEL_ID === FALLBACK_VOICE_CHANNEL_ID) {
   throw new Error(
-    'Missing environment variables. Ensure DISCORD_TOKEN, GUILD_ID and VOICE_CHANNEL_ID are set.'
+    'Missing Discord configuration. Define DISCORD_TOKEN, GUILD_ID y VOICE_CHANNEL_ID en variables de entorno o reemplaza los valores FALLBACK en bot.js.'
   );
 }
 
@@ -125,6 +129,83 @@ const slashCommands = [
     .setDescription('Muestra todos los comandos disponibles del bot.')
     .setDMPermission(false),
 ];
+
+const DEFAULT_PROMO_INTERVAL_MS = 60 * 60 * 1000;
+const promoIntervalMinutes = Number(PROMO_MESSAGE_INTERVAL_MINUTES ?? DEFAULT_PROMO_INTERVAL_MS / 60_000);
+const PROMO_INTERVAL_MS = Number.isFinite(promoIntervalMinutes) && promoIntervalMinutes > 0
+  ? promoIntervalMinutes * 60_000
+  : DEFAULT_PROMO_INTERVAL_MS;
+let promoInterval;
+
+function buildHourlyPromoEmbed() {
+  const embed = new EmbedBuilder()
+    .setColor('#5865f2')
+    .setTitle('BLUE - Tienda Oficial')
+    .setDescription('🎟️ **¡Realiza tus compras únicamente en el canal de tickets!**\n🛎️ Usa **/ticket** para abrir uno con el staff.')
+    .addFields(
+      {
+        name: '🛡️ Garantía',
+        value: '• Productos verificados\n• Soporte 24/7\n• Entrega inmediata',
+        inline: true,
+      },
+      {
+        name: '💳 Métodos de pago',
+        value: '• PayPal\n• Transferencia',
+        inline: true,
+      },
+      {
+        name: '🕒 Horario',
+        value: '• Disponible 24/7\n• Respuesta rápida\n• Atención personalizada',
+      }
+    )
+    .setFooter({ text: 'BLUE Bot · Compras seguras y confiables' })
+    .setTimestamp();
+
+  if (PROMO_IMAGE_URL) {
+    embed.setImage(PROMO_IMAGE_URL);
+  }
+
+  return embed;
+}
+
+async function sendHourlyPromoMessage(channel) {
+  try {
+    const embed = buildHourlyPromoEmbed();
+    await channel.send({ embeds: [embed] });
+  } catch (error) {
+    console.error('Error enviando mensaje promocional:', error);
+  }
+}
+
+async function scheduleHourlyPromo(client) {
+  if (!GENERAL_CHANNEL_ID) {
+    console.warn('GENERAL_CHANNEL_ID no está configurado; se omiten los mensajes promocionales.');
+    return;
+  }
+
+  try {
+    const channel = await client.channels.fetch(GENERAL_CHANNEL_ID);
+
+    if (!channel || channel.type !== ChannelType.GuildText) {
+      console.warn('GENERAL_CHANNEL_ID no apunta a un canal de texto válido; se omiten los mensajes promocionales.');
+      return;
+    }
+
+    await sendHourlyPromoMessage(channel);
+
+    if (promoInterval) {
+      clearInterval(promoInterval);
+    }
+
+    promoInterval = setInterval(() => {
+      sendHourlyPromoMessage(channel);
+    }, PROMO_INTERVAL_MS);
+
+    console.log(`Mensajes promocionales programados cada ${PROMO_INTERVAL_MS / 60_000} minutos en ${channel.id}.`);
+  } catch (error) {
+    console.error('No se pudo programar el mensaje promocional:', error);
+  }
+}
 
 // Función para crear embeds personalizados (slash command)
 async function createCustomEmbed(interaction) {
