@@ -6,6 +6,10 @@
 
 generator client {
   provider = "prisma-client"
+}
+
+generator dashboardClient {
+  provider = "prisma-client"
   output   = "../src/generated"
 }
 
