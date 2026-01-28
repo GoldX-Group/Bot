@@ -140,12 +140,12 @@ let promoInterval;
 function buildHourlyPromoEmbed() {
   const embed = new EmbedBuilder()
     .setColor('#5865f2')
-    .setTitle('BLUE - Tienda Oficial')
+    .setTitle('🔵 GOLD X - GROUP  - Tienda Oficial')
     .setDescription('🎟️ **¡Realiza tus compras únicamente en el canal de tickets!**\n🛎️ Usa **/ticket** para abrir uno con el staff.')
     .addFields(
       {
         name: '🛡️ Garantía',
-        value: '• Productos verificados\n• Soporte 24/7\n• Entrega inmediata',
+        value: '- Productos verificados\n- Soporte 24/7\n- Entrega inmediata',
         inline: true,
       },
       {
@@ -158,7 +158,7 @@ function buildHourlyPromoEmbed() {
         value: '• Disponible 24/7\n• Respuesta rápida\n• Atención personalizada',
       }
     )
-    .setFooter({ text: 'BLUE Bot · Compras seguras y confiables' })
+    .setFooter({ text: 'Gold X - Group  Bot · Compras seguras y confiables' })
     .setTimestamp();
 
   if (PROMO_IMAGE_URL) {
@@ -178,7 +178,7 @@ async function sendHourlyPromoMessage(channel) {
 }
 
 async function scheduleHourlyPromo(client) {
-  if (!GENERAL_CHANNEL_ID) {
+  if (!GENERAL_CHANNEL_ID || GENERAL_CHANNEL_ID === FALLBACK_GENERAL_CHANNEL_ID) {
     console.warn('GENERAL_CHANNEL_ID no está configurado; se omiten los mensajes promocionales.');
     return;
   }
@@ -191,12 +191,14 @@ async function scheduleHourlyPromo(client) {
       return;
     }
 
+    // Enviar el primer mensaje inmediatamente al iniciar
     await sendHourlyPromoMessage(channel);
 
     if (promoInterval) {
       clearInterval(promoInterval);
     }
 
+    // Programar envíos repetidos cada intervalo
     promoInterval = setInterval(() => {
       sendHourlyPromoMessage(channel);
     }, PROMO_INTERVAL_MS);
@@ -842,6 +844,9 @@ client.once(Events.ClientReady, async (readyClient) => {
   } catch (error) {
     console.error('Failed to connect to voice channel on startup:', error);
   }
+
+  // Programar mensajes promocionales
+  await scheduleHourlyPromo(readyClient);
 });
 
 client.on('error', (error) => {
