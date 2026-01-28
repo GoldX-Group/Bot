@@ -130,7 +130,7 @@ const slashCommands = [
     .setDMPermission(false),
 ];
 
-const DEFAULT_PROMO_INTERVAL_MS = 60 * 60 * 1000;
+const DEFAULT_PROMO_INTERVAL_MS = 30 * 60 * 1000;
 const promoIntervalMinutes = Number(PROMO_MESSAGE_INTERVAL_MINUTES ?? DEFAULT_PROMO_INTERVAL_MS / 60_000);
 const PROMO_INTERVAL_MS = Number.isFinite(promoIntervalMinutes) && promoIntervalMinutes > 0
   ? promoIntervalMinutes * 60_000
@@ -140,7 +140,11 @@ let promoInterval;
 function buildHourlyPromoEmbed() {
   const embed = new EmbedBuilder()
     .setColor('#FF0000')
-    .setAuthor({ name: '<:goldx:1368304782233833492> GOLD X - GROUP  - Tienda Oficial', iconURL: 'https://media.discordapp.net/attachments/1461000295814267124/1464234088394260644/Logo_5.png?ex=697aa882&is=69795702&hm=7d9dc3457656985ca445c35950db77a2f3cbad2cc3aab7a0e9fbeb68d54070e6&=&format=webp&quality=lossless&width=263&height=263' })
+    .setAuthor({
+      name: '🔴 GOLD X - GROUP  - Tienda Oficial',
+      iconURL:
+        'https://media.discordapp.net/attachments/1461000295814267124/1464234088394260644/Logo_5.png?ex=697aa882&is=69795702&hm=7d9dc3457656985ca445c35950db77a2f3cbad2cc3aab7a0e9fbeb68d54070e6&=&format=webp&quality=lossless&width=263&height=263',
+    })
     .setDescription('🎟️ **¡Realiza tus compras únicamente en el canal de tickets!**\n🛎️ Usa **/ticket** para abrir uno con el staff.')
     .addFields(
       {
@@ -341,7 +345,8 @@ async function connectToVoiceChannel() {
     channelId: channel.id,
     guildId: channel.guild.id,
     adapterCreator: channel.guild.voiceAdapterCreator,
-    selfDeaf: true,
+    selfDeaf: false,
+    selfMute: false,
   });
 
   voiceConnection = connection;
