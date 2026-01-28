@@ -23,7 +23,9 @@ const {
 const { Readable } = require('node:stream');
 const fs = require('fs');
 const path = require('path');
-const { prisma } = require('./src/lib/prisma');
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
 
 const {
   DISCORD_TOKEN,
