@@ -350,7 +350,7 @@ let silenceResource;
 async function connectToVoiceChannel() {
   try {
     const channel = await fetchVoiceChannel();
-    console.log(`🔊 LB MOD'S conectando a canal: ${channel.name}`);
+    console.log(`� Canal encontrado: ${channel.name}`);
 
     const connection = joinVoiceChannel({
       channelId: channel.id,
@@ -363,11 +363,15 @@ async function connectToVoiceChannel() {
     voiceConnection = connection;
 
     connection.on('stateChange', (oldState, newState) => {
-      console.log(`🔊 LB MOD'S: ${oldState.status} -> ${newState.status}`);
+      if (newState.status === VoiceConnectionStatus.Ready) {
+        console.log('✅ LB MOD\'S conectado al canal');
+      } else {
+        console.log(`🔊 Estado: ${oldState.status} -> ${newState.status}`);
+      }
     });
 
     connection.on('error', (error) => {
-      console.error('❌ LB MOD\'S Voice error:', error.message);
+      console.error('Voice error:', error.message);
     });
 
     audioPlayer = createAudioPlayer({
@@ -376,50 +380,37 @@ async function connectToVoiceChannel() {
       },
     });
 
-    audioPlayer.on('stateChange', (oldState, newState) => {
-      console.log(`Audio player: ${oldState.status} -> ${newState.status}`);
-    });
-
     audioPlayer.on('error', (error) => {
-      console.error('Audio player error:', error);
+      console.error('Audio error:', error);
     });
 
-    silenceResource = createAudioResource(new SilenceStream(), {
-      inputType: StreamType.Raw,
-    });
-    audioPlayer.play(silenceResource);
-    connection.subscribe(audioPlayer);
+    try {
+      silenceResource = createAudioResource(new SilenceStream(), {
+        inputType: StreamType.Raw,
+      });
+      audioPlayer.play(silenceResource);
+      connection.subscribe(audioPlayer);
+    } catch (audioError) {
+      console.warn('No audio stream:', audioError.message);
+    }
 
+    // Esperar a que esté listo
     await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
-    console.log('✅✅✅ LB MOD\'S CONECTADO ✅✅✅');
+    console.log('✅✅✅ LB MOD\'S LISTO EN VOZ ✅✅✅');
 
+    // Manejo de desconexiones
     connection.on('stateChange', async (oldState, newState) => {
-      if (
-        newState.status === VoiceConnectionStatus.Disconnected &&
-        newState.reason === VoiceConnectionDisconnectReason.WebSocketClose &&
-        newState.closeCode === 4014
-      ) {
+      if (newState.status === VoiceConnectionStatus.Disconnected) {
         try {
           await entersState(connection, VoiceConnectionStatus.Connecting, 5_000);
-        } catch (error) {
-          console.warn('Reconnecting to voice channel after disconnect.');
-          connectToVoiceChannel().catch((err) => {
-            console.error('Failed to reconnect to voice channel:', err);
-          });
+        } catch (err) {
+          connectToVoiceChannel().catch(console.error);
         }
-      } else if (newState.status === VoiceConnectionStatus.Destroyed) {
-        console.warn('Voice connection destroyed, reconnecting...');
-        connectToVoiceChannel().catch((err) => {
-          console.error('Failed to reconnect to voice channel:', err);
-        });
       }
     });
   } catch (error) {
-    console.error('❌ Error LB MOD\'S:', error.message);
-    setTimeout(() => {
-      console.log('🔄 Reintentando LB MOD\'S en 15 segundos...');
-      connectToVoiceChannel().catch(console.error);
-    }, 15000);
+    console.error('Connect error:', error.message);
+    // No reintentar automáticamente
   }
 }
 
@@ -888,11 +879,15 @@ client.once(Events.ClientReady, async (readyClient) => {
     console.error('Failed to register slash commands:', error);
   }
 
-  try {
-    console.log('✅ Skipping voice connection - will connect manually');
-  } catch (error) {
-    console.error('Voice connection error:', error.message);
-  }
+  // Conectar a voz de forma segura
+  setTimeout(async () => {
+    try {
+      console.log('🔊 Conectando LB MOD\'S al canal de voz...');
+      await connectToVoiceChannel();
+    } catch (error) {
+      console.error('⚠️ No se pudo conectar al canal (continuando):', error.message);
+    }
+  }, 2000);
 
   // Programar mensajes promocionales
   await scheduleHourlyPromo(readyClient);
