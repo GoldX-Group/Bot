@@ -99,8 +99,8 @@ client2.once(Events.ClientReady, () => {
   console.log(`✅ Bot 2 (${client2.user.tag}) conectado exitosamente`);
   
   // Establecer actividad
-  client2.user.setActivity('El Ceo garena Visual Studio Free Fire', { type: ActivityType.Playing });
-  console.log('🎮 Actividad establecida: El Ceo garena Visual Studio Free Fire');
+  client2.user.setActivity('Visual Studio Free Fire', { type: ActivityType.Playing });
+  console.log('🎮 Actividad establecida: Visual Studio Free Fire');
 
   // Conectar al canal de voz
   connectToVoiceChannel2();
