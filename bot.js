@@ -385,7 +385,7 @@ silenceResource = createAudioResource(new SilenceStream(), {
 
   connection.subscribe(audioPlayer);
 
-  await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
+  await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
   console.log('✅ LB MOD\'S conectado al canal de voz.');
 
   connection.on('stateChange', async (oldState, newState) => {

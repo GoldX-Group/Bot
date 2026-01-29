@@ -71,30 +71,14 @@ async function connectToVoiceChannel2() {
       console.error('Bot 2 - Voice error:', error);
     });
 
-    audioPlayer = createAudioPlayer({
-      behaviors: {
-        noSubscriber: NoSubscriberBehavior.Play,
-      },
-    });
-
-    audioPlayer.on('stateChange', (oldState, newState) => {
-      console.log(`Bot 2 - Audio player: ${oldState.status} -> ${newState.status}`);
-    });
-
-    audioPlayer.on('error', (error) => {
-      console.error('Bot 2 - Audio error:', error);
-    });
-
-    silenceResource = createAudioResource(new SilenceStream(), {
-      inputType: StreamType.Raw,
-    });
-    audioPlayer.play(silenceResource);
-    connection.subscribe(audioPlayer);
-
-    await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
+    await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
     console.log('✅ Bot 2 conectado al canal de voz.');
   } catch (error) {
     console.error('❌ Error conectando Bot 2 al canal:', error);
+    setTimeout(() => {
+      console.log('🔄 Reintentando conexión en 10 segundos...');
+      connectToVoiceChannel2().catch(console.error);
+    }, 10000);
   }
 }
 
