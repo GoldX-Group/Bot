@@ -422,8 +422,6 @@ async function connectToVoiceChannel() {
     }, 15000);
   }
 }
-  });
-}
 
 async function fetchVoiceChannel() {
   const guild = await client.guilds.fetch(GUILD_ID);
