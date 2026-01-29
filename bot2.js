@@ -90,11 +90,7 @@ client2.once(Events.ClientReady, () => {
   // Establecer actividad
   client2.user.setActivity('Visual Studio Free Fire', { type: ActivityType.Playing });
   console.log('🎮 Actividad establecida: Visual Studio Free Fire');
-
-  // Conectar al canal de voz
-  connectToVoiceChannel2().catch(err => {
-    console.error('Bot 2 Voice connection failed:', err.message);
-  });
+  console.log('✅ Bot 2 listo - conectará a voz manualmente');
 });
 
 client2.on(Events.Error, (error) => {

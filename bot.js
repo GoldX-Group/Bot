@@ -82,6 +82,10 @@ const slashCommands = [
     .setDescription('Cierra el ticket actual. Solo staff o creador.')
     .setDMPermission(false),
   new SlashCommandBuilder()
+    .setName('voiceconnect')
+    .setDescription('Conecta los bots al canal de voz')
+    .setDMPermission(false),
+  new SlashCommandBuilder()
     .setName('embed')
     .setDescription('Publica un embed personalizado.')
     .addStringOption((option) =>
@@ -736,6 +740,23 @@ async function stopSound(interaction) {
   }
 }
 
+async function handleVoiceConnect(interaction) {
+  try {
+    await interaction.deferReply();
+    console.log('Intentando conectar bots a voz...');
+    
+    // Conectar bot principal
+    await connectToVoiceChannel().catch(err => {
+      console.log('Bot principal - error no crítico:', err.message);
+    });
+    
+    await interaction.editReply('✅ Bots conectados al canal de voz');
+  } catch (error) {
+    console.error('Error en voice connect:', error);
+    await interaction.editReply('❌ Error al conectar los bots');
+  }
+}
+
 async function showHelp(interaction) {
   const embed = new EmbedBuilder()
     .setColor('#5865f2')
@@ -796,6 +817,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
     switch (interaction.commandName) {
       case 'ticket':
         await createTicket(interaction);
+        break;
+      case 'voiceconnect':
+        await handleVoiceConnect(interaction);
         break;
       case 'close':
         await closeTicket(interaction);
@@ -867,13 +891,9 @@ client.once(Events.ClientReady, async (readyClient) => {
   }
 
   try {
-    console.log('⏳ Esperando 3 segundos antes de conectar al canal...');
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    await connectToVoiceChannel().catch(err => {
-      console.error('Voice connection failed, continuing without voice:', err.message);
-    });
+    console.log('✅ Skipping voice connection - will connect manually');
   } catch (error) {
-    console.error('Failed to connect to voice channel on startup:', error.message);
+    console.error('Voice connection error:', error.message);
   }
 
   // Programar mensajes promocionales
