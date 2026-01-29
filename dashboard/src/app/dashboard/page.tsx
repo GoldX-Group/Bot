@@ -13,7 +13,7 @@ export default async function DashboardPage() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-              Gold X Bot Dashboard
+              LB MOD'S Bot Dashboard
             </h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-zinc-600 dark:text-zinc-400">
