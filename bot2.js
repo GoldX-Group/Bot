@@ -45,71 +45,40 @@ let silenceResource;
 
 async function connectToVoiceChannel2() {
   try {
-    console.log('🔍 Iniciando diagnóstico y conexión...');
-    console.log(`GUILD_ID: ${process.env.GUILD_ID?.trim()}`);
-    console.log(`VOICE_CHANNEL_ID: ${VOICE_CHANNEL_ID}`);
-
-    // Validar que los IDs existan
-    if (!process.env.GUILD_ID?.trim()) {
-      throw new Error('GUILD_ID no configurado');
-    }
-    if (!VOICE_CHANNEL_ID) {
-      throw new Error('VOICE_CHANNEL_ID no configurado');
-    }
-
-    // Fetch guild
-    console.log('📡 Fetching guild...');
+    console.log('� Bot 2 conectando a canal de voz...');
+    
     const guild = await client2.guilds.fetch(process.env.GUILD_ID?.trim());
-    console.log(`✅ Guild encontrado: ${guild.name}`);
-
-    // Fetch channel
-    console.log('📡 Fetching canal de voz...');
     const channel = await guild.channels.fetch(VOICE_CHANNEL_ID);
-    console.log(`✅ Canal encontrado: ${channel.name} (tipo: ${channel.type})`);
-
-    // Verificar permisos
-    const botMember = await guild.members.fetchMe();
-    const permissions = channel.permissionsFor(botMember);
-    console.log(`🔐 Permisos CONNECT: ${permissions.has('Connect')}`);
-    console.log(`🔐 Permisos SPEAK: ${permissions.has('Speak')}`);
-
-    if (!permissions.has('Connect') || !permissions.has('Speak')) {
-      console.warn('⚠️ Permisos insuficientes, intentando conectar igual...');
-    }
 
     if (!channel || channel.type !== ChannelType.GuildVoice) {
-      throw new Error('Canal no es de voz válido');
+      console.error('❌ Canal de voz no válido');
+      return;
     }
 
-    console.log('🔊 Intentando joinVoiceChannel...');
     const connection = joinVoiceChannel({
       channelId: channel.id,
       guildId: channel.guild.id,
       adapterCreator: channel.guild.voiceAdapterCreator,
       selfDeaf: false,
       selfMute: false,
-      debug: true,
     });
 
     voiceConnection = connection;
-    console.log('✅ joinVoiceChannel ejecutado');
 
     connection.on('stateChange', (oldState, newState) => {
-      console.log(`🔊 Bot 2 Voice: ${oldState.status} -> ${newState.status}`);
+      console.log(`🔊 Bot 2: ${oldState.status} -> ${newState.status}`);
     });
 
     connection.on('error', (error) => {
-      console.error('🔊 Bot 2 Voice error:', error.message);
+      console.error('❌ Bot 2 Voice error:', error.message);
     });
 
-    console.log('⏳ Esperando estado Ready (hasta 30 segundos)...');
     await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
-    console.log('✅✅✅ Bot 2 CONECTADO AL CANAL DE VOZ ✅✅✅');
+    console.log('✅✅✅ BOT 2 CONECTADO ✅✅✅');
   } catch (error) {
-    console.error('❌ Error en Bot 2:', error.message);
-    console.error('Stack:', error.stack);
+    console.error('❌ Error Bot 2:', error.message);
     setTimeout(() => {
-      console.log('🔄 Reintentando en 15 segundos...');
+      console.log('🔄 Reintentando Bot 2 en 15 segundos...');
       connectToVoiceChannel2().catch(console.error);
     }, 15000);
   }

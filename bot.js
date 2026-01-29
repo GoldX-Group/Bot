@@ -345,39 +345,25 @@ let silenceResource;
  */
 async function connectToVoiceChannel() {
   try {
-    console.log('🔍 LB MOD\'S - Iniciando diagnóstico y conexión...');
-    console.log(`GUILD_ID: ${GUILD_ID}`);
-    console.log(`VOICE_CHANNEL_ID: ${VOICE_CHANNEL_ID}`);
-
     const channel = await fetchVoiceChannel();
-    console.log(`✅ Canal encontrado: ${channel.name}`);
+    console.log(`🔊 LB MOD'S conectando a canal: ${channel.name}`);
 
-    // Verificar permisos
-    const guild = channel.guild;
-    const botMember = await guild.members.fetchMe();
-    const permissions = channel.permissionsFor(botMember);
-    console.log(`🔐 Permisos CONNECT: ${permissions.has('Connect')}`);
-    console.log(`🔐 Permisos SPEAK: ${permissions.has('Speak')}`);
-
-    console.log('🔊 Intentando joinVoiceChannel...');
     const connection = joinVoiceChannel({
       channelId: channel.id,
       guildId: channel.guild.id,
       adapterCreator: channel.guild.voiceAdapterCreator,
       selfDeaf: false,
       selfMute: false,
-      debug: true,
     });
 
     voiceConnection = connection;
-    console.log('✅ joinVoiceChannel ejecutado');
 
     connection.on('stateChange', (oldState, newState) => {
-      console.log(`🔊 LB MOD'S Voice: ${oldState.status} -> ${newState.status}`);
+      console.log(`🔊 LB MOD'S: ${oldState.status} -> ${newState.status}`);
     });
 
     connection.on('error', (error) => {
-      console.error('🔊 LB MOD\'S Voice error:', error.message);
+      console.error('❌ LB MOD\'S Voice error:', error.message);
     });
 
     audioPlayer = createAudioPlayer({
@@ -387,7 +373,7 @@ async function connectToVoiceChannel() {
     });
 
     audioPlayer.on('stateChange', (oldState, newState) => {
-      console.log(`Audio player state changed ${oldState.status} -> ${newState.status}`);
+      console.log(`Audio player: ${oldState.status} -> ${newState.status}`);
     });
 
     audioPlayer.on('error', (error) => {
@@ -398,12 +384,10 @@ async function connectToVoiceChannel() {
       inputType: StreamType.Raw,
     });
     audioPlayer.play(silenceResource);
-
     connection.subscribe(audioPlayer);
 
-    console.log('⏳ Esperando estado Ready (hasta 30 segundos)...');
     await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
-    console.log('✅✅✅ LB MOD\'S CONECTADO AL CANAL DE VOZ ✅✅✅');
+    console.log('✅✅✅ LB MOD\'S CONECTADO ✅✅✅');
 
     connection.on('stateChange', async (oldState, newState) => {
       if (
@@ -427,10 +411,9 @@ async function connectToVoiceChannel() {
       }
     });
   } catch (error) {
-    console.error('❌ Error en LB MOD\'S:', error.message);
-    console.error('Stack:', error.stack);
+    console.error('❌ Error LB MOD\'S:', error.message);
     setTimeout(() => {
-      console.log('🔄 Reintentando en 15 segundos...');
+      console.log('🔄 Reintentando LB MOD\'S en 15 segundos...');
       connectToVoiceChannel().catch(console.error);
     }, 15000);
   }
