@@ -344,70 +344,97 @@ let silenceResource;
  * Joins the configured voice channel and starts a silent audio stream to avoid disconnects.
  */
 async function connectToVoiceChannel() {
-  const channel = await fetchVoiceChannel();
+  try {
+    console.log('🔍 LB MOD\'S - Iniciando diagnóstico y conexión...');
+    console.log(`GUILD_ID: ${GUILD_ID}`);
+    console.log(`VOICE_CHANNEL_ID: ${VOICE_CHANNEL_ID}`);
 
-  const connection = joinVoiceChannel({
-    channelId: channel.id,
-    guildId: channel.guild.id,
-    adapterCreator: channel.guild.voiceAdapterCreator,
-    selfDeaf: false,
-    selfMute: false,
-  });
+    const channel = await fetchVoiceChannel();
+    console.log(`✅ Canal encontrado: ${channel.name}`);
 
-  voiceConnection = connection;
+    // Verificar permisos
+    const guild = channel.guild;
+    const botMember = await guild.members.fetchMe();
+    const permissions = channel.permissionsFor(botMember);
+    console.log(`🔐 Permisos CONNECT: ${permissions.has('Connect')}`);
+    console.log(`🔐 Permisos SPEAK: ${permissions.has('Speak')}`);
 
-  connection.on('stateChange', (oldState, newState) => {
-    console.log(`Voice connection state changed ${oldState.status} -> ${newState.status}`);
-  });
+    console.log('🔊 Intentando joinVoiceChannel...');
+    const connection = joinVoiceChannel({
+      channelId: channel.id,
+      guildId: channel.guild.id,
+      adapterCreator: channel.guild.voiceAdapterCreator,
+      selfDeaf: false,
+      selfMute: false,
+      debug: true,
+    });
 
-  connection.on('error', (error) => {
-    console.error('Voice connection error:', error);
-  });
+    voiceConnection = connection;
+    console.log('✅ joinVoiceChannel ejecutado');
 
-  audioPlayer = createAudioPlayer({
-    behaviors: {
-      noSubscriber: NoSubscriberBehavior.Play,
-    },
-  });
+    connection.on('stateChange', (oldState, newState) => {
+      console.log(`🔊 LB MOD'S Voice: ${oldState.status} -> ${newState.status}`);
+    });
 
-  audioPlayer.on('stateChange', (oldState, newState) => {
-    console.log(`Audio player state changed ${oldState.status} -> ${newState.status}`);
-  });
+    connection.on('error', (error) => {
+      console.error('🔊 LB MOD\'S Voice error:', error.message);
+    });
 
-  audioPlayer.on('error', (error) => {
-    console.error('Audio player error:', error);
-  });
+    audioPlayer = createAudioPlayer({
+      behaviors: {
+        noSubscriber: NoSubscriberBehavior.Play,
+      },
+    });
 
-silenceResource = createAudioResource(new SilenceStream(), {
+    audioPlayer.on('stateChange', (oldState, newState) => {
+      console.log(`Audio player state changed ${oldState.status} -> ${newState.status}`);
+    });
+
+    audioPlayer.on('error', (error) => {
+      console.error('Audio player error:', error);
+    });
+
+    silenceResource = createAudioResource(new SilenceStream(), {
       inputType: StreamType.Raw,
     });
-  audioPlayer.play(silenceResource);
+    audioPlayer.play(silenceResource);
 
-  connection.subscribe(audioPlayer);
+    connection.subscribe(audioPlayer);
 
-  await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
-  console.log('✅ LB MOD\'S conectado al canal de voz.');
+    console.log('⏳ Esperando estado Ready (hasta 30 segundos)...');
+    await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
+    console.log('✅✅✅ LB MOD\'S CONECTADO AL CANAL DE VOZ ✅✅✅');
 
-  connection.on('stateChange', async (oldState, newState) => {
-    if (
-      newState.status === VoiceConnectionStatus.Disconnected &&
-      newState.reason === VoiceConnectionDisconnectReason.WebSocketClose &&
-      newState.closeCode === 4014
-    ) {
-      try {
-        await entersState(connection, VoiceConnectionStatus.Connecting, 5_000);
-      } catch (error) {
-        console.warn('Reconnecting to voice channel after disconnect.');
+    connection.on('stateChange', async (oldState, newState) => {
+      if (
+        newState.status === VoiceConnectionStatus.Disconnected &&
+        newState.reason === VoiceConnectionDisconnectReason.WebSocketClose &&
+        newState.closeCode === 4014
+      ) {
+        try {
+          await entersState(connection, VoiceConnectionStatus.Connecting, 5_000);
+        } catch (error) {
+          console.warn('Reconnecting to voice channel after disconnect.');
+          connectToVoiceChannel().catch((err) => {
+            console.error('Failed to reconnect to voice channel:', err);
+          });
+        }
+      } else if (newState.status === VoiceConnectionStatus.Destroyed) {
+        console.warn('Voice connection destroyed, reconnecting...');
         connectToVoiceChannel().catch((err) => {
           console.error('Failed to reconnect to voice channel:', err);
         });
       }
-    } else if (newState.status === VoiceConnectionStatus.Destroyed) {
-      console.warn('Voice connection destroyed, reconnecting...');
-      connectToVoiceChannel().catch((err) => {
-        console.error('Failed to reconnect to voice channel:', err);
-      });
-    }
+    });
+  } catch (error) {
+    console.error('❌ Error en LB MOD\'S:', error.message);
+    console.error('Stack:', error.stack);
+    setTimeout(() => {
+      console.log('🔄 Reintentando en 15 segundos...');
+      connectToVoiceChannel().catch(console.error);
+    }, 15000);
+  }
+}
   });
 }
 
