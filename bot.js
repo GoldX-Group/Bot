@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-// LB MOD'S Bot - Updated
+// LB MOD'S Bot - Updated v2
 const {
   ActivityType,
   ChannelType,
