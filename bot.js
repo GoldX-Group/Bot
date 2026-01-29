@@ -869,9 +869,11 @@ client.once(Events.ClientReady, async (readyClient) => {
   try {
     console.log('⏳ Esperando 3 segundos antes de conectar al canal...');
     await new Promise(resolve => setTimeout(resolve, 3000));
-    await connectToVoiceChannel();
+    await connectToVoiceChannel().catch(err => {
+      console.error('Voice connection failed, continuing without voice:', err.message);
+    });
   } catch (error) {
-    console.error('Failed to connect to voice channel on startup:', error);
+    console.error('Failed to connect to voice channel on startup:', error.message);
   }
 
   // Programar mensajes promocionales

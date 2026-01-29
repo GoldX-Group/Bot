@@ -92,7 +92,9 @@ client2.once(Events.ClientReady, () => {
   console.log('🎮 Actividad establecida: Visual Studio Free Fire');
 
   // Conectar al canal de voz
-  connectToVoiceChannel2();
+  connectToVoiceChannel2().catch(err => {
+    console.error('Bot 2 Voice connection failed:', err.message);
+  });
 });
 
 client2.on(Events.Error, (error) => {
