@@ -26,6 +26,9 @@ const fs = require('fs');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 
+// Iniciar Bot 2
+require('./bot2.js');
+
 if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.trim()) {
   process.env.DATABASE_URL = 'file:./prisma/dev.db';
 }
