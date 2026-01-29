@@ -383,7 +383,7 @@ async function connectToVoiceChannel() {
   connection.subscribe(audioPlayer);
 
   await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
-  console.log('Connected to voice channel and streaming silence.');
+  console.log('✅ LB MOD\'S conectado al canal de voz.');
 
   connection.on('stateChange', async (oldState, newState) => {
     if (
