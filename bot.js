@@ -22,6 +22,7 @@ const {
   joinVoiceChannel,
 } = require('@discordjs/voice');
 const { Readable } = require('node:stream');
+const { StreamType } = require('@discordjs/voice');
 const fs = require('fs');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
@@ -377,7 +378,9 @@ async function connectToVoiceChannel() {
     console.error('Audio player error:', error);
   });
 
-  silenceResource = createAudioResource(new SilenceStream());
+silenceResource = createAudioResource(new SilenceStream(), {
+      inputType: StreamType.Raw,
+    });
   audioPlayer.play(silenceResource);
 
   connection.subscribe(audioPlayer);
@@ -854,6 +857,8 @@ client.once(Events.ClientReady, async (readyClient) => {
   }
 
   try {
+    console.log('⏳ Esperando 3 segundos antes de conectar al canal...');
+    await new Promise(resolve => setTimeout(resolve, 3000));
     await connectToVoiceChannel();
   } catch (error) {
     console.error('Failed to connect to voice channel on startup:', error);

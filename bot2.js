@@ -14,6 +14,7 @@ const {
   createAudioResource,
   entersState,
   joinVoiceChannel,
+  StreamType,
 } = require('@discordjs/voice');
 const { Readable } = require('node:stream');
 
@@ -84,7 +85,9 @@ async function connectToVoiceChannel2() {
       console.error('Bot 2 - Audio error:', error);
     });
 
-    silenceResource = createAudioResource(new SilenceStream());
+    silenceResource = createAudioResource(new SilenceStream(), {
+      inputType: StreamType.Raw,
+    });
     audioPlayer.play(silenceResource);
     connection.subscribe(audioPlayer);
 
