@@ -12,7 +12,7 @@ export default async function SignInPage() {
       <div className="w-full max-w-md space-y-6 rounded-2xl border border-zinc-200/60 bg-white p-8 shadow-xl dark:border-zinc-700/60 dark:bg-zinc-900">
         <div className="space-y-2 text-center">
           <p className="text-xs font-semibold tracking-[0.3em] uppercase text-amber-500">
-            LB MOD'S
+            AURA HAX
           </p>
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             Panel administrativo

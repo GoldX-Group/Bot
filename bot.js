@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-// LB MOD'S Bot - Updated v2
+// AURA HAX Bot - Updated v2
 const {
   ActivityType,
   ChannelType,
@@ -150,7 +150,7 @@ function buildHourlyPromoEmbed() {
   const embed = new EmbedBuilder()
     .setColor('#FF0000')
     .setAuthor({
-      name: '🔴 LB MOD\'S - Tienda Oficial',
+      name: '🔴 AURA HAX - Tienda Oficial',
       iconURL:
         'https://media.discordapp.net/attachments/1461000295814267124/1464234088394260644/Logo_5.png?ex=697aa882&is=69795702&hm=7d9dc3457656985ca445c35950db77a2f3cbad2cc3aab7a0e9fbeb68d54070e6&=&format=webp&quality=lossless&width=263&height=263',
     })
@@ -173,7 +173,7 @@ function buildHourlyPromoEmbed() {
     )
     .setImage('https://media.discordapp.net/attachments/1464150603524608092/1465931866703134809/Banner.png?ex=697ae6f0&is=69799570&hm=120b784d241efc13edb36d94beee859a6a214fc9bc364aa3fe480e8e81c7e2c1&=&format=webp&quality=lossless&width=1020&height=588')
     .setFooter({
-      text: 'LB MOD\'S Bot · Compras seguras y confiables',
+      text: 'AURA HAX · Compras seguras y confiables',
       iconURL:
         'https://media.discordapp.net/attachments/1461000295814267124/1464234088394260644/Logo_5.png?ex=697aa882&is=69795702&hm=7d9dc3457656985ca445c35950db77a2f3cbad2cc3aab7a0e9fbeb68d54070e6&=&format=webp&quality=lossless&width=263&height=263',
     })
@@ -364,8 +364,8 @@ async function connectToVoiceChannel() {
 
     connection.on('stateChange', (oldState, newState) => {
       if (newState.status === VoiceConnectionStatus.Ready) {
-        console.log('✅ LB MOD\'S conectado al canal');
-      } else {
+          console.log('✅ AURA HAX conectado al canal');
+        } else {
         console.log(`🔊 Estado: ${oldState.status} -> ${newState.status}`);
       }
     });
@@ -396,7 +396,7 @@ async function connectToVoiceChannel() {
 
     // Esperar a que esté listo
     await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
-    console.log('✅✅✅ LB MOD\'S LISTO EN VOZ ✅✅✅');
+    console.log('✅✅✅ AURA HAX LISTO EN VOZ ✅✅✅');
 
     // Manejo de desconexiones
     connection.on('stateChange', async (oldState, newState) => {
@@ -859,7 +859,7 @@ client.once(Events.ClientReady, async (readyClient) => {
   readyClient.user.setPresence({
     activities: [
       {
-        name: 'Jugando LB MOD\'S',
+        name: 'Jugando AURA HAX',
         type: ActivityType.Playing,
       },
     ],
@@ -882,7 +882,7 @@ client.once(Events.ClientReady, async (readyClient) => {
   // Conectar a voz de forma segura
   setTimeout(async () => {
     try {
-      console.log('🔊 Conectando LB MOD\'S al canal de voz...');
+      console.log('🔊 Conectando AURA HAX al canal de voz...');
       await connectToVoiceChannel();
     } catch (error) {
       console.error('⚠️ No se pudo conectar al canal (continuando):', error.message);

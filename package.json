@@ -1,7 +1,7 @@
 {
   "name": "gold-x-group-bot",
   "version": "1.0.0",
-  "description": "Discord bot that stays connected to a voice channel for LB MOD'S",
+  "description": "Discord bot that stays connected to a voice channel for AURA HAX",
   "main": "bot.js",
   "scripts": {
     "start": "npx prisma generate && node bot.js",

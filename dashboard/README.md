@@ -1,6 +1,6 @@
-# LB MOD'S Bot Dashboard
+# AURA HAX Bot Dashboard
 
-Panel de administración para el bot LB MOD'S, construido con Next.js, TypeScript y Tailwind CSS.
+Panel de administración para el bot AURA HAX, construido con Next.js, TypeScript y Tailwind CSS.
 
 ## Uso
 ```bash
