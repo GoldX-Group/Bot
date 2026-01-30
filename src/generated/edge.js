@@ -274,7 +274,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Syste\\CascadeProjects\\GOLD X - GROUP BOT\\src\\generated",
+      "value": "C:\\Users\\Syste\\CascadeProjects\\Aura Hax Bot\\src\\generated",
       "fromEnvVar": null
     },
     "config": {

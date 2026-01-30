@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AURA HAX Bot Dashboard",
-  description: "Panel de administración para AURA HAX Bot",
+  title: "Aura Hax Bot Dashboard",
+  description: "Panel de administración para Aura Hax Bot",
 };
 
 export default function RootLayout({
