@@ -1,6 +1,6 @@
-# Aura Hax Bot Dashboard
+# AURA HAX Bot Dashboard
 
-Panel de administración para el bot Aura Hax, construido con Next.js, TypeScript y Tailwind CSS.
+Panel de administración para el bot AURA HAX, construido con Next.js, TypeScript y Tailwind CSS.
 
 ## Uso
 ```bash
