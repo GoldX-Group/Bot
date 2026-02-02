@@ -1,0 +1,216 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator dashboardClient {
+  provider = "prisma-client-js"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model GuildSetting {
+  id             Int      @id @default(autoincrement())
+  guildId        String   @unique
+  locale         String?  @default("es")
+  staffRoleIds   String?  @map("staff_role_ids")
+  ticketCategory String?  @map("ticket_category_config")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tickets      Ticket[]
+  levelConfigs LevelConfig[]
+  storeItems   StoreItem[]
+  moderation   ModerationAction[]
+  audioQueues  AudioQueueItem[]
+  auditLogs    AuditLog[]
+  userProfiles UserProfile[]
+}
+
+model Ticket {
+  id         Int      @id @default(autoincrement())
+  guildId    String
+  userId     String
+  channelId  String   @unique
+  category   String?
+  priority   String   @default("MEDIUM")
+  status     String   @default("OPEN")
+  assignedTo String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  guild    GuildSetting    @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  messages TicketMessage[]
+}
+
+model TicketMessage {
+  id          Int      @id @default(autoincrement())
+  ticketId    Int
+  authorId    String
+  content     String
+  attachments String?
+  createdAt   DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+}
+
+model UserProfile {
+  id         Int      @id @default(autoincrement())
+  guildId    String
+  userId     String
+  experience Int      @default(0)
+  level      Int      @default(1)
+  balance    Int      @default(0)
+  inventory  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  authUserId String?
+
+  guild        GuildSetting         @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  transactions EconomyTransaction[]
+  authUser     User?                @relation(fields: [authUserId], references: [id], onDelete: SetNull)
+}
+
+model LevelConfig {
+  id           Int      @id @default(autoincrement())
+  guildId      String
+  level        Int
+  requiredXp   Int
+  rewardRoleId String?
+  rewardItemId Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  guild GuildSetting @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+
+  @@unique([guildId, level])
+}
+
+model EconomyTransaction {
+  id          Int      @id @default(autoincrement())
+  profileId   Int
+  guildId     String
+  amount      Int
+  type        String   @default("EARN")
+  description String?
+  metadata    String?
+  createdAt   DateTime @default(now())
+
+  profile UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model StoreItem {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  name        String
+  description String?
+  price       Int
+  isActive    Boolean  @default(true)
+  payload     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  guild GuildSetting @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+}
+
+model ModerationAction {
+  id              Int       @id @default(autoincrement())
+  guildId         String
+  userId          String
+  moderatorId     String
+  type            String
+  reason          String?
+  durationMinutes Int?
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+
+  guild GuildSetting @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+}
+
+model AudioQueueItem {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  position    Int
+  title       String
+  url         String
+  thumbnail   String?
+  requestedBy String
+  durationSec Int?
+  metadata    String?
+  createdAt   DateTime @default(now())
+
+  guild GuildSetting @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+
+  @@unique([guildId, position])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  actorId   String
+  action    String
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  guild GuildSetting @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  profiles UserProfile[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
