@@ -162,6 +162,29 @@ exports.Prisma.UserProfileScalarFieldEnum = {
   authUserId: 'authUserId'
 };
 
+exports.Prisma.PollScalarFieldEnum = {
+  id: 'id',
+  guildId: 'guildId',
+  channelId: 'channelId',
+  messageId: 'messageId',
+  authorId: 'authorId',
+  question: 'question',
+  options: 'options',
+  type: 'type',
+  duration: 'duration',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PollVoteScalarFieldEnum = {
+  id: 'id',
+  pollId: 'pollId',
+  userId: 'userId',
+  optionIndex: 'optionIndex',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.LevelConfigScalarFieldEnum = {
   id: 'id',
   guildId: 'guildId',
@@ -284,6 +307,8 @@ exports.Prisma.ModelName = {
   Ticket: 'Ticket',
   TicketMessage: 'TicketMessage',
   UserProfile: 'UserProfile',
+  Poll: 'Poll',
+  PollVote: 'PollVote',
   LevelConfig: 'LevelConfig',
   EconomyTransaction: 'EconomyTransaction',
   StoreItem: 'StoreItem',

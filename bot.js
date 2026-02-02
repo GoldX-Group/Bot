@@ -54,6 +54,17 @@ const path = require('path');
 
 const { PrismaClient } = require('@prisma/client');
 
+// Importar comandos de nivel
+const rankCommand = require('./src/commands/level/rank');
+const leaderboardCommand = require('./src/commands/level/leaderboard');
+
+// Importar comandos de encuestas
+const pollCommand = require('./src/commands/polls/create');
+
+// Importar eventos
+const messageCreateEvent = require('./src/events/messageCreate');
+const messageReactionAddEvent = require('./src/events/messageReactionAdd');
+
 
 
 // Iniciar Bot 2
@@ -272,6 +283,30 @@ const slashCommands = [
     .setName('help')
 
     .setDescription('Muestra todos los comandos disponibles del bot.')
+
+    .setDMPermission(false),
+
+  new SlashCommandBuilder()
+
+    .setName('rank')
+
+    .setDescription('Muestra tu nivel y experiencia actual.')
+
+    .setDMPermission(false),
+
+  new SlashCommandBuilder()
+
+    .setName('leaderboard')
+
+    .setDescription('Muestra el top 10 de usuarios con más nivel del servidor.')
+
+    .setDMPermission(false),
+
+  new SlashCommandBuilder()
+
+    .setName('poll')
+
+    .setDescription('Crea y gestiona encuestas.')
 
     .setDMPermission(false),
 
@@ -1657,6 +1692,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
         break;
 
+      case 'rank':
+
+        await rankCommand.execute(interaction);
+
+        break;
+
+      case 'leaderboard':
+
+        await leaderboardCommand.execute(interaction);
+
+        break;
+
+      case 'poll':
+
+        await pollCommand.execute(interaction);
+
+        break;
+
       default:
 
         await interaction.reply({ content: 'Comando no reconocido.', ephemeral: true });
@@ -1690,6 +1743,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 
 });
+
+// Evento para otorgar XP por mensajes
+client.on(Events.MessageCreate, messageCreateEvent.execute);
+
+// Evento para manejar votos en encuestas
+client.on(Events.MessageReactionAdd, messageReactionAddEvent.execute);
 
 
 

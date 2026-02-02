@@ -34,6 +34,7 @@ model GuildSetting {
   audioQueues  AudioQueueItem[]
   auditLogs    AuditLog[]
   userProfiles UserProfile[]
+  polls        Poll[]
 }
 
 model Ticket {
@@ -79,6 +80,36 @@ model UserProfile {
   guild        GuildSetting         @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
   transactions EconomyTransaction[]
   authUser     User?                @relation(fields: [authUserId], references: [id], onDelete: SetNull)
+}
+
+model Poll {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  channelId String
+  messageId String?
+  authorId  String
+  question  String
+  options   String
+  type      String // single, multiple, anonymous
+  duration  Int      @default(0) // duración en horas, 0 = sin límite
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild GuildSetting @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  votes PollVote[]
+}
+
+model PollVote {
+  id          Int      @id @default(autoincrement())
+  pollId      Int
+  userId      String
+  optionIndex Int
+  createdAt   DateTime @default(now())
+
+  poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId])
 }
 
 model LevelConfig {
