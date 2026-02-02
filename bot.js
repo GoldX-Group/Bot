@@ -57,8 +57,7 @@ const { PrismaClient } = require('@prisma/client');
 
 
 // Iniciar Bot 2
-
-require('./bot2.js');
+// require('./bot2.js');
 
 
 
