@@ -1,0 +1,54 @@
+{
+
+  "name": "gold-x-group-bot",
+
+  "version": "1.0.0",
+
+  "description": "Discord bot that stays connected to a voice channel for AURA HAX",
+
+  "main": "bot.js",
+
+  "scripts": {
+
+    "init:env": "node scripts/init-env.js",
+
+    "prisma:generate": "prisma generate",
+
+    "start": "node bot.js",
+
+    "postinstall": "prisma generate"
+
+  },
+
+  "keywords": [
+
+    "discord",
+
+    "voice",
+
+    "bot"
+
+  ],
+
+  "author": "",
+
+  "license": "MIT",
+
+  "dependencies": {
+
+    "@discordjs/opus": "^0.10.0",
+
+    "@discordjs/voice": "^0.16.1",
+
+    "@prisma/client": "^5.15.0",
+
+    "discord.js": "^14.14.1",
+
+    "dotenv": "^16.4.5",
+
+    "prisma": "^5.15.0"
+
+  }
+
+}
+
