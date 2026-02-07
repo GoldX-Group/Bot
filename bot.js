@@ -422,7 +422,7 @@ async function sendHourlyPromoMessage(channel) {
 
 async function scheduleHourlyPromo(client) {
 
-  if (!GENERAL_CHANNEL_ID) {
+  if (!GENERAL_CHANNEL_ID || GENERAL_CHANNEL_ID === FALLBACK_GENERAL_CHANNEL_ID) {
 
     console.warn('GENERAL_CHANNEL_ID no está configurado; se omiten los mensajes promocionales.');
 
