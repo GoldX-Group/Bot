@@ -23,23 +23,22 @@ module.exports = {
         .setAuthor({ name: 'Aura Hax' })
         .setTitle('Aura Hax')
         .setDescription(
-          'Esperamos que encuentres un lugar acogedor y divertido aquí. No dudes en explorar los diferentes canales, participar en las conversaciones y conocer a otros miembros.'
+          '𝐸𝑠𝑝𝑒𝑟𝑎𝑚𝑜𝑠 𝑞𝑢𝑒 𝑒𝑛𝑐𝑢𝑒𝑛𝑡𝑟𝑒𝑠 𝑢𝑛 𝑙𝑢𝑔𝑎𝑟 𝑎𝑐𝑜𝑔𝑒𝑑𝑜𝑟 𝑦 𝑑𝑖𝑣𝑒𝑟𝑡𝑖𝑑𝑜 𝑎𝑞𝑢𝑖. 𝑁𝑜 𝑑𝑢𝑑𝑒𝑠 𝑒𝑛 𝑒𝑥𝑝𝑙𝑜𝑟𝑎𝑟 𝑙𝑜𝑠 𝑑𝑖𝑓𝑒𝑟𝑒𝑛𝑡𝑒𝑠 𝑐𝑎𝑛𝑎𝑙𝑒𝑠, 𝑝𝑎𝑟𝑡𝑖𝑐𝑖𝑝𝑎𝑟 𝑒𝑛 𝑙𝑎𝑠 𝑐𝑜𝑛𝑣𝑒𝑟𝑠𝑎𝑐𝑖𝑜𝑛𝑒𝑠 𝑦 𝑐𝑜𝑛𝑜𝑐𝑒𝑟 𝑎 𝑜𝑡𝑟𝑜𝑠 𝑚𝑖𝑒𝑚𝑏𝑟𝑜𝑠.\n\n**Free Fire Store**\n<#1461000331923165265>\n<#1461000335924527116>\n\n**Custom Work**\n<#1464199020460118158>\n<#1464199035891220560>\n\n**Buy Now**\n<#1461000320300748844>\n\n**Communication**\n<#1461000306300158042>\n<#1461000308506361949>\n<#1461000310385410269>'
         )
         .addFields(
           {
-            name: '★ · Disfruta tu estadía y Diviértete en nuestro Clan · ★',
-            value: 'Si tienes alguna duda, no dudes en preguntar a los administradores o moderadores.',
+            name: '★・𝑫𝒊𝒔𝒇𝒓𝒖𝒕𝒂 𝒕𝒖 𝒆𝒔𝒕𝒂𝒅𝒊𝒂 𝒚 𝑫𝒊𝒗𝒊𝒆𝒓𝒕𝒆𝒕𝒆 𝒆𝒏 𝒏𝒖𝒆𝒔𝒕𝒓𝒐 𝑪𝒍𝒂𝒏・★',
+            value: '𝑆𝑖 𝑡𝑖𝑒𝑛𝑒𝑠 𝑎𝑙𝑔𝑢𝑛𝑎 𝑑𝑢𝑑𝑎, 𝑛𝑜 𝑑𝑢𝑑𝑒𝑠 𝑒𝑛 𝑝𝑟𝑒𝑔𝑢𝑛𝑡𝑎𝑟 𝑎 𝑙𝑜𝑠 𝑎𝑑𝑚𝑖𝑛𝑖𝑠𝑡𝑟𝑎𝑑𝑜𝑟𝑒𝑠 - 𝑚𝑜𝑑𝑒𝑟𝑎𝑑𝑜𝑟𝑒𝑠 𝑜 𝑎',
           },
           {
-            name: 'Nuevo miembro',
-            value: `${member} ingresó al servidor\nAhora somos **${member.guild.memberCount}** miembros.`,
+            name: '¡Nuevo miembro!',
+            value: `¡${member} ingresó al servidor!\nEres El Miembro **${member.guild.memberCount}**`,
           }
         )
+        .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
+        .setImage('https://images-ext-1.discordapp.net/external/xTI6g5aINpseidTEwC8BXwE668hRahP5Z7pNiiJ2Fe0/https/cdn.nekotina.com/guilds/1440466602675142820/b0693fcb-fd8d-40f8-a13b-df38653461e5.png?format=webp&quality=lossless')
+        .setFooter({ text: 'Aura Hax © 2026 | By Linox' })
         .setTimestamp();
-
-      if (WELCOME_IMAGE_URL) {
-        embed.setImage(WELCOME_IMAGE_URL);
-      }
 
       await channel.send({ embeds: [embed] });
     } catch (error) {
