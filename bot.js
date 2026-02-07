@@ -64,7 +64,6 @@ const pollCommand = require('./src/commands/polls/create');
 // Importar eventos
 const messageCreateEvent = require('./src/events/messageCreate');
 const messageReactionAddEvent = require('./src/events/messageReactionAdd');
-const guildMemberAddEvent = require('./src/events/guildMemberAdd');
 
 
 
@@ -1743,9 +1742,6 @@ client.on(Events.MessageCreate, messageCreateEvent.execute);
 
 // Evento para manejar votos en encuestas
 client.on(Events.MessageReactionAdd, messageReactionAddEvent.execute);
-
-// Evento de bienvenida al entrar al servidor
-client.on(Events.GuildMemberAdd, guildMemberAddEvent.execute);
 
 
 client.once(Events.ClientReady, async (readyClient) => {
