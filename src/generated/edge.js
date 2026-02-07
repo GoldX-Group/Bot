@@ -299,7 +299,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Linox\\Desktop\\Bot Aura Hax\\src\\generated",
+      "value": "C:\\Users\\Linox\\Desktop\\Bot-main\\src\\generated",
       "fromEnvVar": null
     },
     "config": {
