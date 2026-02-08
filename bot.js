@@ -307,7 +307,7 @@ const slashCommands = [
 
 
 
-const DEFAULT_PROMO_INTERVAL_MS = 30 * 60 * 1000;
+const DEFAULT_PROMO_INTERVAL_MS = 60 * 60 * 1000;
 
 const promoIntervalMinutes = Number(PROMO_MESSAGE_INTERVAL_MINUTES ?? DEFAULT_PROMO_INTERVAL_MS / 60_000);
 
@@ -407,7 +407,21 @@ async function sendHourlyPromoMessage(channel) {
 
     const embed = buildHourlyPromoEmbed();
 
-    await channel.send({ content: '||@everyone|| ||@here||', embeds: [embed] });
+    const me = channel.guild?.members?.me;
+    const permissions = me ? channel.permissionsFor(me) : null;
+    const canMentionEveryone = Boolean(permissions?.has(PermissionFlagsBits.MentionEveryone));
+
+    if (!canMentionEveryone) {
+
+      console.warn(
+
+        `No tengo permiso para mencionar @everyone/@here en ${channel.id}; enviando promo sin menciones.`
+
+      );
+
+    }
+
+    await channel.send({ content: canMentionEveryone ? '||@everyone|| ||@here||' : '', embeds: [embed] });
 
   } catch (error) {
 
@@ -421,7 +435,7 @@ async function sendHourlyPromoMessage(channel) {
 
 async function scheduleHourlyPromo(client) {
 
-  if (!GENERAL_CHANNEL_ID || GENERAL_CHANNEL_ID === FALLBACK_GENERAL_CHANNEL_ID) {
+  if (!GENERAL_CHANNEL_ID) {
 
     console.warn('GENERAL_CHANNEL_ID no está configurado; se omiten los mensajes promocionales.');
 
@@ -437,9 +451,26 @@ async function scheduleHourlyPromo(client) {
 
 
 
-    if (!channel || channel.type !== ChannelType.GuildText) {
+    if (!channel || ![ChannelType.GuildText, ChannelType.GuildAnnouncement].includes(channel.type)) {
 
       console.warn('GENERAL_CHANNEL_ID no apunta a un canal de texto válido; se omiten los mensajes promocionales.');
+
+      return;
+
+    }
+
+
+
+    const me = channel.guild?.members?.me;
+    const permissions = me ? channel.permissionsFor(me) : null;
+
+    if (!permissions?.has(PermissionFlagsBits.SendMessages)) {
+
+      console.warn(
+
+        `No tengo permisos para enviar mensajes en el canal ${channel.id}; se omiten los mensajes promocionales.`
+
+      );
 
       return;
 
